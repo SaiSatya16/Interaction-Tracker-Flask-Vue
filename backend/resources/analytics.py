@@ -19,7 +19,14 @@ class InteractionHeatmapApi(Resource):
         # Format data for heatmap
         heatmap_data = {}
         for interaction in interactions:
-            date_str = interaction['timestamp'].strftime('%Y-%m-%d')
+            # Check if timestamp is a string and convert it to datetime if needed
+            if isinstance(interaction['timestamp'], str):
+                timestamp = datetime.fromisoformat(interaction['timestamp'].replace('Z', '+00:00'))
+            else:
+                timestamp = interaction['timestamp']
+                
+            date_str = timestamp.strftime('%Y-%m-%d')
+
             if date_str in heatmap_data:
                 heatmap_data[date_str] += 1
             else:
