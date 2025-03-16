@@ -1,11 +1,11 @@
+// frontend/src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import SignupView from '../views/SignupView.vue'
 import DashboardView from '../views/DashboardView.vue'
-import InteractionsView from '../views/InteractionsView.vue'
-import ContactsView from '../views/ContactsView.vue'
-import ContactDetail from '../views/ContactDetail.vue'
+import NewInteractionView from '../views/NewInteractionView.vue'
+import InteractionDetailView from '../views/InteractionDetailView.vue'
 import AnalyticsView from '../views/AnalyticsView.vue'
 
 const routes = [
@@ -31,21 +31,15 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/interactions',
-    name: 'Interactions',
-    component: InteractionsView,
+    path: '/interactions/new',
+    name: 'NewInteraction',
+    component: NewInteractionView,
     meta: { requiresAuth: true }
   },
   {
-    path: '/contacts',
-    name: 'Contacts',
-    component: ContactsView,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/contacts/:id',
-    name: 'ContactDetail',
-    component: ContactDetail,
+    path: '/interactions/:id',
+    name: 'InteractionDetail',
+    component: InteractionDetailView,
     meta: { requiresAuth: true }
   },
   {
@@ -64,7 +58,9 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('token')
   
-  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+  if (to.path === '/' && isAuthenticated) {
+    next('/dashboard')
+  } else if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
     next('/login')
   } else {
     next()

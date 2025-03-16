@@ -55,6 +55,9 @@ export default createStore({
       },
       setNetworkData(state, data) {
         state.networkData = data
+      },
+      setDarkMode(state, isDark) {
+        state.darkMode = isDark
       }
     },
     actions: {
@@ -120,7 +123,22 @@ export default createStore({
       async fetchNetworkData({ commit }) {
         const response = await axios.get(`${API_URL}/analytics/network`)
         commit('setNetworkData', response.data)
-      }
+      },
+      async fetchInteractionById({ commit }, id) {
+        try {
+          const response = await axios.get(`${API_URL}/interactions/${id}`)
+          commit('setCurrentInteraction', response.data)
+          return response.data
+        } catch (error) {
+          console.error('Error fetching interaction:', error)
+          throw error
+        }
+      },
+      
+      async toggleDarkMode({ commit }, isDark) {
+        commit('setDarkMode', isDark)
+        localStorage.setItem('theme', isDark ? 'dark' : 'light')
+      },
     },
     getters: {
       isAuthenticated: state => !!state.token
