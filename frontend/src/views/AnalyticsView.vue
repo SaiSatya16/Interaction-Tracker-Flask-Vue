@@ -6,48 +6,22 @@
         Analytics
       </v-card-title>
       
-      <v-tabs v-model="tab" background-color="primary" dark grow>
-        <v-tab>
-          <v-icon left>mdi-calendar-month</v-icon>
-          Interaction Heatmap
-        </v-tab>
-        <v-tab>
-          <v-icon left>mdi-account-network</v-icon>
-          Network Graph
-        </v-tab>
-      </v-tabs>
-      
-      <v-tabs-items v-model="tab">
-        <v-tab-item>
-          <v-card flat>
-            <v-card-text>
-              <div class="heatmap-container">
-                <v-skeleton-loader
-                  v-if="!Object.keys(heatmapData).length"
-                  type="card"
-                  height="500"
-                ></v-skeleton-loader>
-                <heatmap-chart v-else :data="heatmapData"></heatmap-chart>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-tab-item>
-        
-        <v-tab-item>
-          <v-card flat>
-            <v-card-text>
-              <div class="network-container">
-                <v-skeleton-loader
-                  v-if="!networkData.nodes || !networkData.nodes.length"
-                  type="card"
-                  height="500"
-                ></v-skeleton-loader>
-                <network-graph v-else :data="networkData"></network-graph>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-tab-item>
-      </v-tabs-items>
+      <v-card flat>
+        <v-card-text style="height: 600px;">
+          <div class="heatmap-container">
+            <v-skeleton-loader
+              v-if="loadingHeatmap"
+              type="card"
+              height="500"
+            ></v-skeleton-loader>
+            <div v-else-if="!Object.keys(heatmapData).length" class="text-center pa-5">
+              <v-icon size="large" color="grey">mdi-chart-timeline-variant</v-icon>
+              <p class="text-body-1 mt-2">No interaction data available. Start logging interactions to see your activity.</p>
+            </div>
+            <heatmap-chart v-else :data="heatmapData"></heatmap-chart>
+          </div>
+        </v-card-text>
+      </v-card>
     </v-card>
   </v-container>
 </template>
@@ -55,43 +29,42 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import HeatmapChart from '@/components/HeatmapChart.vue'
-import NetworkGraph from '@/components/NetworkGraph.vue'
 
 export default {
   name: 'AnalyticsView',
   components: {
-    HeatmapChart,
-    NetworkGraph
+    HeatmapChart
   },
   data() {
     return {
-      tab: 0
+      loadingHeatmap: true
     }
   },
   computed: {
-    ...mapState(['heatmapData', 'networkData'])
+    ...mapState(['heatmapData'])
   },
   methods: {
-    ...mapActions(['fetchHeatmapData', 'fetchNetworkData'])
+    ...mapActions(['fetchHeatmapData']),
+    async loadHeatmapData() {
+      this.loadingHeatmap = true
+      try {
+        await this.fetchHeatmapData()
+      } catch (error) {
+        console.error('Error loading heatmap data:', error)
+      } finally {
+        this.loadingHeatmap = false
+      }
+    }
   },
   mounted() {
-    this.$nextTick(() => {
-      this.fetchHeatmapData()
-      this.fetchNetworkData()
-    })
+    this.loadHeatmapData();
   }
 }
 </script>
 
 <style scoped>
-.network-container {
-  height: 600px;
-  margin-top: 20px;
-}
-
 .heatmap-container {
   height: 500px;
   margin-top: 20px;
 }
 </style>
-

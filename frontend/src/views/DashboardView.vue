@@ -23,15 +23,13 @@
             :items="interactions"
             :items-per-page="10"
             class="elevation-0"
-            @click:row="viewInteractionDetails"
+            hover
+            item-value="_id"
           >
-            <!-- <template v-slot:item.timestamp="{ item }"> -->
-              <template #[slotName]="{ item }">
-
+            <template #[`item.timestamp`]="{ item }">
               {{ formatDate(item.timestamp) }}
             </template>
-            <!-- <template v-slot:item.tags="{ item }"> -->
-            <template #[slotName2]="{ item }">
+            <template #[`item.tags`]="{ item }">
               <v-chip
                 v-for="tag in item.tags"
                 :key="tag"
@@ -42,6 +40,29 @@
               >
                 {{ tag }}
               </v-chip>
+            </template>
+            <template #item="{ item, props }">
+              <tr 
+                @click="viewInteractionDetails(item._id)" 
+                v-bind="props" 
+                style="cursor: pointer;"
+              >
+                <td>{{ item.contact_name }}</td>
+                <td>{{ item.interaction_type }}</td>
+                <td>{{ formatDate(item.timestamp) }}</td>
+                <td>
+                  <v-chip
+                    v-for="tag in item.tags"
+                    :key="tag"
+                    size="small"
+                    class="mr-1"
+                    color="secondary"
+                    variant="outlined"
+                  >
+                    {{ tag }}
+                  </v-chip>
+                </td>
+              </tr>
             </template>
           </v-data-table>
         </v-card>
@@ -67,21 +88,20 @@ export default {
     }
   },
   computed: {
-    ...mapState(['interactions']),
-    slotName() {
-      return 'item.timestamp'
-    },
-    slotName2() {
-      return 'item.tags'
-    }
+    ...mapState(['interactions'])
   },
   methods: {
     ...mapActions(['fetchInteractions']),
     formatDate(date) {
-      return moment(date).format('MMMM D, YYYY')
+      return moment(date).format('MMM D, YYYY')
     },
-    viewInteractionDetails(item) {
-      this.$router.push(`/interactions/${item._id}`)
+    viewInteractionDetails(id) {
+      console.log('Interaction clicked:', id);
+      if (id) {
+        this.$router.push(`/interactions/${id}`);
+      } else {
+        console.error('Interaction ID is undefined');
+      }
     }
   },
   created() {
@@ -89,3 +109,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.v-data-table tr {
+  cursor: pointer;
+}
+</style>

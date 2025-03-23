@@ -5,6 +5,7 @@ from models.interaction import Interaction
 from models.contact import Contact
 from datetime import datetime, timedelta
 
+# In backend/resources/analytics.py - fix the truncated code
 class InteractionHeatmapApi(Resource):
     @jwt_required()
     def get(self):
@@ -26,13 +27,13 @@ class InteractionHeatmapApi(Resource):
                 timestamp = interaction['timestamp']
                 
             date_str = timestamp.strftime('%Y-%m-%d')
-
             if date_str in heatmap_data:
                 heatmap_data[date_str] += 1
             else:
                 heatmap_data[date_str] = 1
         
         return heatmap_data, 200
+
 
 class NetworkGraphApi(Resource):
     @jwt_required()

@@ -58,7 +58,12 @@ export default createStore({
       },
       setDarkMode(state, isDark) {
         state.darkMode = isDark
-      }
+      },
+      // In mutations:
+setCurrentInteraction(state, interaction) {
+  state.currentInteraction = interaction
+}
+
     },
     actions: {
       async login({ commit }, credentials) {
@@ -116,24 +121,55 @@ export default createStore({
         const response = await axios.post(`${API_URL}/contacts/${id}/notes`, { content: note })
         commit('setCurrentContact', response.data)
       },
-      async fetchHeatmapData({ commit }) {
-        const response = await axios.get(`${API_URL}/analytics/heatmap`)
-        commit('setHeatmapData', response.data)
-      },
-      async fetchNetworkData({ commit }) {
-        const response = await axios.get(`${API_URL}/analytics/network`)
-        commit('setNetworkData', response.data)
-      },
-      async fetchInteractionById({ commit }, id) {
-        try {
-          const response = await axios.get(`${API_URL}/interactions/${id}`)
-          commit('setCurrentInteraction', response.data)
-          return response.data
-        } catch (error) {
-          console.error('Error fetching interaction:', error)
-          throw error
-        }
-      },
+// In frontend/src/store/index.js - update these actions
+async fetchHeatmapData({ commit }) {
+  try {
+    const response = await axios.get(`${API_URL}/analytics/heatmap`)
+    commit('setHeatmapData', response.data)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching heatmap data:', error)
+    throw error
+  }
+},
+
+async fetchNetworkData({ commit }) {
+  try {
+    const response = await axios.get(`${API_URL}/analytics/network`);
+    // Make sure we're not modifying the response directly
+    const processedData = { ...response.data };
+    commit('setNetworkData', processedData);
+    return processedData;
+  } catch (error) {
+    console.error('Error fetching network data:', error);
+    throw error;
+  }
+}
+,
+      // In src/store/index.js, add or modify these actions:
+
+async fetchInteractionById({ commit }, id) {
+  try {
+    const response = await axios.get(`${API_URL}/interactions/${id}`)
+    commit('setCurrentInteraction', response.data)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching interaction:', error)
+    throw error
+  }
+},
+
+async updateInteractionNotes({ commit }, { id, notes }) {
+  try {
+    const response = await axios.put(`${API_URL}/interactions/${id}`, { notes })
+    commit('updateInteraction', response.data)
+    return response.data
+  } catch (error) {
+    console.error('Error updating interaction notes:', error)
+    throw error
+  }
+}
+,
       
       async toggleDarkMode({ commit }, isDark) {
         commit('setDarkMode', isDark)

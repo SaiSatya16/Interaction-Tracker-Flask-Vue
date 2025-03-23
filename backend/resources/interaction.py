@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.interaction import Interaction
 from bson import ObjectId
 from datetime import datetime
-
+from database.db import db
 class InteractionsApi(Resource):
     @jwt_required()
     def get(self):
@@ -44,10 +44,27 @@ class InteractionsApi(Resource):
         return {'id': str(interaction.inserted_id)}, 201
 
 class InteractionApi(Resource):
+# In backend/resources/interaction.py
     @jwt_required()
     def get(self, id):
-        # Implement getting a specific interaction
-        pass
+        try:
+            interaction = db.interactions.find_one({'_id': ObjectId(id)})
+            
+            if not interaction:
+                return {'message': 'Interaction not found'}, 404
+            
+            # Convert ObjectId to string for JSON serialization
+            interaction['_id'] = str(interaction['_id'])
+            
+            # Convert datetime to ISO format string
+            if 'timestamp' in interaction and isinstance(interaction['timestamp'], datetime):
+                interaction['timestamp'] = interaction['timestamp'].isoformat()
+            
+            return interaction, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
     
     @jwt_required()
     def put(self, id):
